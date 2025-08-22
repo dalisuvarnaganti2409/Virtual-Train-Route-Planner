@@ -1,0 +1,126 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Node structure for train station
+struct Station {
+    string name;
+    Station* next;
+    Station* prev;
+};
+
+// Route Planner Class
+class TrainRoute {
+private:
+    Station* head;
+    bool isCircular;
+
+public:
+    TrainRoute(bool circular = false) {
+        head = nullptr;
+        isCircular = circular;
+    }
+
+    // Add station
+    void addStation(string name) {
+        Station* newStation = new Station{name, nullptr, nullptr};
+
+        if (!head) {
+            head = newStation;
+            if (isCircular) {
+                head->next = head;
+                head->prev = head;
+            }
+        } else {
+            Station* tail = head->prev ? head->prev : head;
+            if (!isCircular) {
+                // Normal doubly linked list
+                while (tail->next) tail = tail->next;
+                tail->next = newStation;
+                newStation->prev = tail;
+            } else {
+                // Circular linked list
+                tail = head->prev; // last node
+                newStation->next = head;
+                newStation->prev = tail;
+                tail->next = newStation;
+                head->prev = newStation;
+            }
+        }
+        cout << "✅ Station added: " << name << endl;
+    }
+
+    // Display route
+    void displayRoute(int count = 0) {
+        if (!head) {
+            cout << "⚠️ No stations available.\n";
+            return;
+        }
+
+        cout << "\n--- Train Route ---\n";
+        Station* current = head;
+        int printed = 0;
+        do {
+            cout << current->name << " -> ";
+            current = current->next;
+            printed++;
+            if (!isCircular && !current) break;
+        } while (isCircular ? (current != head || printed < count) : current);
+
+        cout << (isCircular ? "(back to " + head->name + ")" : "END") << endl;
+    }
+
+    // Navigate route forward/back
+    void navigate(string start, int steps, bool forward = true) {
+        if (!head) return;
+
+        Station* current = head;
+        // find start station
+        while (current && current->name != start) {
+            current = current->next;
+            if (isCircular && current == head) break;
+        }
+
+        if (!current || current->name != start) {
+            cout << "⚠️ Station not found.\n";
+            return;
+        }
+
+        cout << "Starting at: " << current->name << endl;
+        for (int i = 0; i < steps; i++) {
+            current = forward ? current->next : current->prev;
+            if (!isCircular && !current) {
+                cout << "🚉 End of route reached.\n";
+                return;
+            }
+            cout << "Moved to: " << current->name << endl;
+        }
+    }
+};
+
+// Main function
+int main() {
+    cout << "🚆 Virtual Train Route Planner 🚆\n";
+
+    // Example 1: Normal Doubly Linked Route
+    TrainRoute route1(false);
+    route1.addStation("A");
+    route1.addStation("B");
+    route1.addStation("C");
+    route1.addStation("D");
+
+    route1.displayRoute();
+    route1.navigate("B", 2, true);   // move forward from B
+    route1.navigate("C", 1, false);  // move backward from C
+
+    // Example 2: Circular Metro Route
+    TrainRoute circularRoute(true);
+    circularRoute.addStation("X");
+    circularRoute.addStation("Y");
+    circularRoute.addStation("Z");
+
+    circularRoute.displayRoute(6); // show repeating loop
+    circularRoute.navigate("Y", 4, true);
+
+    return 0;
+}
