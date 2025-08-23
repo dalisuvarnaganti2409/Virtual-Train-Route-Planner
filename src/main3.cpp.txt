@@ -65,7 +65,7 @@ public:
             current = current->next;
             printed++;
             if (!isCircular && !current) break;
-        } while (isCircular ? (current != head || printed < count) : current);
+        } while (isCircular ? (current != head || printed < count) : current!=nullptr);
 
         cout << (isCircular ? "(back to " + head->name + ")" : "END") << endl;
     }
@@ -124,3 +124,4 @@ int main() {
 
     return 0;
 }
+
